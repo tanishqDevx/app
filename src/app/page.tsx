@@ -19,7 +19,7 @@ export default function StudentPhotoPage() {
     }
 
     // Build the API URL
-    const url = `/api/photo?roll=${encodeURIComponent(
+    const url = `/api/db?roll=${encodeURIComponent(
       roll.toUpperCase()
     )}&year=${encodeURIComponent(year)}`;
 
