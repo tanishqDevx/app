@@ -2,73 +2,69 @@
 
 import { useState } from "react";
 
-export default function SearchForm() {
-  const [code, setCode] = useState("");
+export default function StudentPhotoPage() {
+  const [roll, setRoll] = useState("");
   const [year, setYear] = useState("24"); // default year
-  const [data, setData] = useState<{ result?: string; photo?: string; error?: string } | null>(null);
-
-  // Regex: 1 digit + 2 alphanumeric chars
-  const pattern = /^[0-9][A-Za-z0-9]{2}$/;
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(null);
+    setPhotoUrl(null);
 
-    if (!pattern.test(code)) {
-      alert("Code must be 1 number + 2 alphanumeric chars (e.g. 1AB, 9z3).");
+    if (!roll || !year) {
+      setError("Please enter both roll and year.");
       return;
     }
 
+    // Build the API URL
+    const url = `/api/db?roll=${encodeURIComponent(
+      roll.toUpperCase()
+    )}&year=${encodeURIComponent(year)}`;
+
     try {
-      const res = await fetch(`/api/db?query=${code}&year=${year}`);
-      const json = await res.json();
-      setData(json);
+      // Fetch as blob
+      const res = await fetch(url);
+      if (!res.ok) throw new Error("Failed to fetch image");
+
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      setPhotoUrl(objectUrl);
     } catch (err) {
-      setData({ error: "Failed to fetch from server." });
+      setError("Failed to fetch from server.");
     }
   };
 
   return (
-    <div className="p-4 border rounded max-w-md mx-auto">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        {/* Roll Code Input */}
+    <div className="p-4 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Student Photo Search</h1>
+
+      <form onSubmit={handleSubmit} className="space-y-2">
         <input
           type="text"
-          value={code}
-          onChange={(e) => setCode(e.target.value)}
-          placeholder="last three digit of roll no"
-          className="border rounded p-2"
-          maxLength={3}
+          placeholder="Roll (e.g., 51U)"
+          value={roll}
+          onChange={(e) => setRoll(e.target.value)}
+          className="border p-2 w-full"
         />
-
-        {/* Year Dropdown */}
-        <select
+        <input
+          type="text"
+          placeholder="Year (e.g., 24)"
           value={year}
           onChange={(e) => setYear(e.target.value)}
-          className="border rounded p-2"
-        >
-          {[20, 21, 22, 23, 24].map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
-
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
+          className="border p-2 w-full"
+        />
+        <button type="submit" className="bg-blue-500 text-white p-2 w-full">
           Search
         </button>
       </form>
 
-      {data && (
-        <div className="mt-4 p-3 bg-gray-100 rounded">
-          {data.error && <p className="text-red-600 font-semibold">{data.error}</p>}
-          {data.result && <p className="font-semibold">{data.result}</p>}
-          {data.photo && (
-            <div className="mt-2">
-              <img
-                src={data.photo}
-                alt="Student photo"
-                className="rounded shadow-md max-w-xs"
-              />
-            </div>
-          )}
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+
+      {photoUrl && (
+        <div className="mt-4">
+          <img src={photoUrl} alt="Student Photo" className="border" />
         </div>
       )}
     </div>

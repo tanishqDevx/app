@@ -2,17 +2,40 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const query = searchParams.get("query"); // roll suffix
-  const year = searchParams.get("year");   // 20–25
 
-  if (!query || !year) {
-    return NextResponse.json({ error: "Missing query or year" }, { status: 400 });
+  const roll = searchParams.get("roll");
+  const year = searchParams.get("year");
+
+  if (!roll || !year) {
+    return NextResponse.json(
+      { error: "Missing roll or year" },
+      { status: 400 }
+    );
   }
 
-  const roll_suffix = query.toUpperCase();
+  // Build external URL
+  const rollSuffix = roll.toUpperCase();
+  const url = `http://portal.teleuniv.in/public/pics/${year}BD1A0${rollSuffix}.jpg?timer=1`;
 
-  return NextResponse.json({
-    result: `You searched for: ${year}-${query}`,
-    photo: `/api/photo?roll=${roll_suffix}&year=${year}`, // pass both
-  });
+  try {
+    const res = await fetch(url);
+
+    if (!res.ok) {
+      return NextResponse.json({ error: "Image not found" }, { status: 404 });
+    }
+
+    const buffer = await res.arrayBuffer();
+
+    return new NextResponse(buffer, {
+      headers: {
+        "Content-Type": "image/jpeg",
+        "Cache-Control": "public, max-age=86400", // 1 day cache
+      },
+    });
+  } catch (err) {
+    return NextResponse.json(
+      { error: "Failed to fetch image" },
+      { status: 500 }
+    );
+  }
 }
