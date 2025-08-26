@@ -6,6 +6,7 @@ export default function SearchForm() {
   const [code, setCode] = useState("");
   const [data, setData] = useState<{ result?: string; photo?: string; error?: string } | null>(null);
 
+  // Regex: 1 digit + 2 alphanumeric chars
   const pattern = /^[0-9][A-Za-z0-9]{2}$/;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,7 +51,11 @@ export default function SearchForm() {
           {data.result && <p className="font-semibold">{data.result}</p>}
           {data.photo && (
             <div className="mt-2">
-              <img src={data.photo} alt="Student photo" className="rounded shadow-md max-w-xs" />
+              <img
+                src={data.photo}
+                alt="Student photo"
+                className="rounded shadow-md max-w-xs"
+              />
             </div>
           )}
         </div>
